@@ -60,6 +60,57 @@ struct ChoiceView: View {
     }
 }
 
+struct GameView: View {
+    var body: some View {
+        ZStack {
+            Image("Green_Forest_1")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+            VStack {
+                Text("this is the game view")
+            }
+        }
+    }
+}
+
+struct GameMenuView: View {
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Image("Green_Forest_1")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                VStack() {
+                    Text("Reduce Game Menu")
+                        .padding(.top, 100)
+                        .foregroundStyle(.white)
+                        .font(.system(size: 75, weight: .bold))
+                    Spacer()
+                    NavigationLink {
+                        GameView()
+                    } label: {
+                        Text("Start game")
+                            .padding()
+                            .background(Color.white.opacity(0.3))      // Green background
+                            .foregroundStyle(.white)     // White text
+                            .font(.system(size: 60, weight: .bold))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))// Rounded corners
+                    }
+                    Spacer()
+                }
+                .padding(.bottom, 100)
+            }
+            
+        }
+        
+    }
+}
+
+#Preview {
+    GameMenuView()
+}
 
 //
 //  reduce_game.swift
