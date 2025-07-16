@@ -14,6 +14,50 @@ struct ScenarioCard: Identifiable {
     let correctIsLeft: Bool
 }
 
+
+
+struct ScenarioCardView: View {
+    let card: ScenarioCard
+    var onChoose: (Bool) -> Void
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            ChoiceView(text: card.textLeft, isLeft: true)
+                .onTapGesture {
+                    onChoose(true)
+                }
+            
+            ChoiceView(text: card.textRight, isLeft: false)
+                .onTapGesture {
+                    onChoose(false)
+                }
+        }
+        .padding()
+    }
+}
+   
+
+struct ChoiceView: View {
+    let text: String
+    let isLeft: Bool
+
+    var body: some View {
+        Text(text)
+            .font(.largeTitle)
+            .frame(width: 300, height: 140)
+            .background(Color(isLeft ? .green : .blue).opacity(0.3))
+            .cornerRadius(12)
+            .animation(.easeInOut, value: text)
+    }
+}
+
+func createGame() -> ReduceGame {
+    let gameCards = [
+        ScenarioCard(textLeft: "Shower for 5 minutes", textRight: "Shower for 1 hour!", correctIsLeft: true)
+    ]
+    return ReduceGame(cards: gameCards)
+}
+
 class ReduceGame: ObservableObject {
     @Published var cards: [ScenarioCard]
     @Published var currentIndex = 0
@@ -24,43 +68,32 @@ class ReduceGame: ObservableObject {
     }
 
     func choose(isLeft: Bool) {
-        if cards[currentIndex].correctIsLeft == isLeft {
+        guard let currentCard = currentCard else { return }
+        
+        if currentCard.correctIsLeft == isLeft {
             score += 1
         }
         currentIndex += 1
+        
+        
     }
+    
+    var currentCard: ScenarioCard? {
+        guard currentIndex < cards.count else { return nil }
+        return cards[currentIndex]
+    }
+    
+    func reset() {
+        currentIndex = 0
+        cards = cards.shuffled()
+        score = 0
+    }
+    
 }
 
-struct ScenarioCardView: View {
-    let card: ScenarioCard
-    var onChoose: (Bool) -> Void
-
-    var body: some View {
-        HStack(spacing: 20) {
-            ChoiceView(text: card.textLeft, isLeft: true)
-                .onTapGesture { onChoose(true) }
-            ChoiceView(text: card.textRight, isLeft: false)
-                .onTapGesture { onChoose(false) }
-        }
-        .padding()
-    }
-}
-
-struct ChoiceView: View {
-    let text: String
-    let isLeft: Bool
-
-    var body: some View {
-        Text(text)
-            .font(.title2)
-            .frame(width: 140, height: 140)
-            .background(Color(isLeft ? .green : .blue).opacity(0.3))
-            .cornerRadius(12)
-            .animation(.easeInOut, value: text)
-    }
-}
-
-struct GameView: View {
+struct EndScreenView: View {
+    let score: Int
+    var resetAction: () -> Void
     var body: some View {
         ZStack {
             Image("Green_Forest_1")
@@ -68,9 +101,42 @@ struct GameView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
             VStack {
-                Text("this is the game view")
+                Text("Game Over")
+                    .font(.system(size: 100, weight: .black))
+                    .foregroundStyle(.red)
+                    .shadow(radius: 10)
+                
+                Text("Score: \(score)")
+                    .font(.title2)
+                            
+                Button("Play Again") {
+                    resetAction()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    
+    }
+}
+
+struct GameView: View {
+    @StateObject var game: ReduceGame
+    var body: some View {
+        ZStack {
+            Image("Green_Forest_1")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+            VStack {
+                if let currentCard = game.currentCard {
+                    ScenarioCardView(card: currentCard, onChoose: {choice in game.choose(isLeft: choice)})
+                } else {
+                    EndScreenView(score: game.score, resetAction: {game.reset()})
+                }
             }
         }
+        
     }
 }
 
@@ -89,7 +155,7 @@ struct GameMenuView: View {
                         .font(.system(size: 75, weight: .bold))
                     Spacer()
                     NavigationLink {
-                        GameView()
+                        GameView(game: createGame())
                     } label: {
                         Text("Start game")
                             .padding()
@@ -102,9 +168,7 @@ struct GameMenuView: View {
                 }
                 .padding(.bottom, 100)
             }
-            
         }
-        
     }
 }
 
