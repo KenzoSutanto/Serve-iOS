@@ -74,8 +74,6 @@ class ReduceGame: ObservableObject {
             score += 1
         }
         currentIndex += 1
-        
-        
     }
     
     var currentCard: ScenarioCard? {
@@ -106,15 +104,23 @@ struct EndScreenView: View {
                     .foregroundStyle(.red)
                     .shadow(radius: 10)
                 
-                Text("Score: \(score)")
-                    .font(.title2)
-                            
-                Button("Play Again") {
-                    resetAction()
+                HStack {
+                    Text("Score: \(score)")
+                        .font(.system(size: 75, weight: .bold))
+                    Image(systemName: "star.fill") // Filled star
+                        .font(.system(size: 75))
+                        .foregroundColor(.yellow)
                 }
-                .buttonStyle(.borderedProminent)
+                Button(action: {
+                    resetAction()
+                }) {
+                    Text("Play Again")
+                        .padding()
+                        .foregroundStyle(.black)
+                        .font(.system(size: 60, weight: .bold))
+                }
+                .foregroundStyle(.black)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     
     }
@@ -149,20 +155,19 @@ struct GameMenuView: View {
                     .scaledToFill()
                     .ignoresSafeArea()
                 VStack() {
-                    Text("Reduce Game Menu")
+                    Text("Welcome to the Reduce Game!")
                         .padding(.top, 100)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.black)
                         .font(.system(size: 75, weight: .bold))
+                        .frame(width: 600)
                     Spacer()
                     NavigationLink {
                         GameView(game: createGame())
                     } label: {
                         Text("Start game")
-                            .padding()
-                            .background(Color.white.opacity(0.3))      // Green background
-                            .foregroundStyle(.white)     // White text
+                            .padding()    // Green background
+                            .foregroundStyle(.black)     // White text
                             .font(.system(size: 60, weight: .bold))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))// Rounded corners
                     }
                     Spacer()
                 }
@@ -173,6 +178,8 @@ struct GameMenuView: View {
 }
 
 #Preview {
+    //@Previewable @StateObject var game = createGame()
+    //EndScreenView(score: 10, resetAction: {game.reset()})
     GameMenuView()
 }
 
