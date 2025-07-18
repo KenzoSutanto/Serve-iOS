@@ -1,155 +1,10 @@
 import SwiftUI
 
-struct ReuseGameView: View {
-    // Reusable items
-    @State private var items = [
-        ReuseItem(id: 1, name: "Cardboard Box", image: "shippingbox", originalUse: "Shipping", reuseOptions: ["Play House", "Storage Bin", "Art Canvas"], position: CGPoint(x: 50, y: 100)),
-        ReuseItem(id: 2, name: "Glass Jar", image: "jar", originalUse: "Food Storage", reuseOptions: ["Pencil Holder", "Vase", "Terrarium"], position: CGPoint(x: 150, y: 100)),
-        ReuseItem(id: 3, name: "Old T-Shirt", image: "tshirt", originalUse: "Clothing", reuseOptions: ["Rags", "Tote Bag", "Quilt"], position: CGPoint(x: 250, y: 100)),
-        ReuseItem(id: 4, name: "Egg Carton", image: "egg", originalUse: "Holding Eggs", reuseOptions: ["Seed Starter", "Paint Palette", "Organizer"], position: CGPoint(x: 350, y: 100)),
-        ReuseItem(id: 5, name: "Plastic Bottle", image: "waterbottle", originalUse: "Drinking", reuseOptions: ["Bird Feeder", "Watering Can", "Piggy Bank"], position: CGPoint(x: 450, y: 100))
-    ]
-    
-    // Reuse stations
-    let stations = [
-        ReuseStation(type: .craft, position: CGPoint(x: 100, y: 600)),
-        ReuseStation(type: .garden, position: CGPoint(x: 300, y: 600)),
-        ReuseStation(type: .home, position: CGPoint(x: 500, y: 600))
-    ]
-    
-    // Game state
-    @State private var showingSuccess = false
-    @State private var showingIdeas = false
-    @State private var currentItem: ReuseItem?
-    @State private var score = 0
-    @State private var itemsReused = 0
-    @State private var reuseIdeas: [String] = []
-    
-    var body: some View {
-        ZStack {
-            // Background
-            Image("Green_Forest_1")
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
-                .opacity(0.8)
-            
-            // Game area
-            GeometryReader { geometry in
-                // Draggable items
-                ForEach(items) { item in
-                    Image(systemName: item.image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 80, height: 80)
-                        .foregroundColor(.white)
-                        .padding(10)
-                        .background(Color.orange.opacity(0.7))
-                        .cornerRadius(10)
-                        .position(item.position)
-                        .shadow(radius: 3)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    currentItem = item
-                                    if let index = items.firstIndex(where: { $0.id == item.id }) {
-                                        items[index].position = value.location
-                                    }
-                                }
-                                .onEnded { value in
-                                    checkDropLocation(value.location)
-                                }
-                        )
-                }
-                
-                // Reuse stations
-                ForEach(stations, id: \.type) { station in
-                    ReuseStationView(station: station)
-                        .position(station.position)
-                }
-                
-                // Score display
-                VStack {
-                    Text("Reuse It!")
-                        .font(.largeTitle)
-                        .bold()
-                        .foregroundColor(.white)
-                        .shadow(color: .black, radius: 2)
-                    
-                    Text("Items Reused: \(score)")
-                        .font(.title)
-                        .foregroundColor(.white)
-                        .shadow(color: .black, radius: 2)
-                        .padding()
-                    
-                    Spacer()
-                }
-                .frame(width: geometry.size.width)
-            }
-            
-            // Success message with reuse ideas
-            if showingSuccess {
-                SuccessMessageView(reuseIdeas: reuseIdeas, action: {
-                    showingSuccess = false
-                    if itemsReused == items.count {
-                        resetGame()
-                    }
-                })
-            }
-        }
-    }
-    
-    private func checkDropLocation(_ location: CGPoint) {
-        guard let currentItem = currentItem else { return }
-        
-        for station in stations {
-            let stationRect = CGRect(x: station.position.x - 50, y: station.position.y - 75, width: 100, height: 150)
-            
-            if stationRect.contains(location) {
-                // Any station is correct for reuse (we're encouraging creative thinking)
-                score += 1
-                itemsReused += 1
-                reuseIdeas = currentItem.reuseOptions
-                removeItem(currentItem)
-                showingSuccess = true
-                return
-            }
-        }
-        
-        // Dropped outside any station - return to original position
-        resetCurrentItemPosition()
-    }
-    
-    private func removeItem(_ item: ReuseItem) {
-        items.removeAll { $0.id == item.id }
-    }
-    
-    private func resetCurrentItemPosition() {
-        guard let currentItem = currentItem else { return }
-        
-        if let index = items.firstIndex(where: { $0.id == currentItem.id }) {
-            items[index].position = currentItem.position
-        }
-    }
-    
-    private func resetGame() {
-        items = [
-            ReuseItem(id: 1, name: "Cardboard Box", image: "shippingbox", originalUse: "Shipping", reuseOptions: ["Play House", "Storage Bin", "Art Canvas"], position: CGPoint(x: 50, y: 100)),
-            ReuseItem(id: 2, name: "Glass Jar", image: "jar", originalUse: "Food Storage", reuseOptions: ["Pencil Holder", "Vase", "Terrarium"], position: CGPoint(x: 150, y: 100)),
-            ReuseItem(id: 3, name: "Old T-Shirt", image: "tshirt", originalUse: "Clothing", reuseOptions: ["Rags", "Tote Bag", "Quilt"], position: CGPoint(x: 250, y: 100)),
-            ReuseItem(id: 4, name: "Egg Carton", image: "egg", originalUse: "Holding Eggs", reuseOptions: ["Seed Starter", "Paint Palette", "Organizer"], position: CGPoint(x: 350, y: 100)),
-            ReuseItem(id: 5, name: "Plastic Bottle", image: "waterbottle", originalUse: "Drinking", reuseOptions: ["Bird Feeder", "Watering Can", "Piggy Bank"], position: CGPoint(x: 450, y: 100))
-        ]
-        itemsReused = 0
-    }
-}
-
-// MARK: - Models and Enums
+// MARK: - Models
 
 enum StationType: String, CaseIterable, Identifiable {
     case craft, garden, home
-    var id: String { self.rawValue }
-    
+    var id: String { rawValue }
     var color: Color {
         switch self {
         case .craft: return .purple
@@ -157,106 +12,301 @@ enum StationType: String, CaseIterable, Identifiable {
         case .home: return .blue
         }
     }
-    
-    var icon: String {
+    var iconName: String {
         switch self {
         case .craft: return "paintpalette"
         case .garden: return "leaf"
         case .home: return "house"
         }
     }
-    
-    var title: String {
-        switch self {
-        case .craft: return "Craft Station"
-        case .garden: return "Garden Area"
-        case .home: return "Home Use"
-        }
-    }
 }
 
-struct ReuseStation {
+struct ReuseStation: Identifiable {
+    let id = UUID()
     let type: StationType
     let position: CGPoint
 }
 
-struct ReuseItem: Identifiable {
+struct ReuseItem: Identifiable, Equatable {
     let id: Int
     let name: String
     let image: String
-    let originalUse: String
-    let reuseOptions: [String]
-    var position: CGPoint
+    let isReusable: Bool
+    let reuseOptions: [String]?
+    var position: CGPoint = .zero
+
+    static let initialList: [ReuseItem] = [
+        // reusables
+        .init(id: 1, name: "Cardboard Box", image: "shippingbox", isReusable: true, reuseOptions: ["Play House","Storage Bin","Art Canvas"]),
+        .init(id: 2, name: "Glass Jar", image: "jar", isReusable: true, reuseOptions: ["Pencil Holder","Vase","Terrarium"]),
+        .init(id: 3, name: "Old T-Shirt", image: "tshirt", isReusable: true, reuseOptions: ["Rags","Tote Bag","Quilt"]),
+        .init(id: 4, name: "Egg Carton", image: "cube.box.fill", isReusable: true, reuseOptions: ["Seed Starter","Paint Palette","Organizer"]),
+        .init(id: 5, name: "Plastic Bottle", image: "drop.fill", isReusable: true, reuseOptions: ["Bird Feeder","Watering Can","Piggy Bank"]),
+        .init(id: 6, name: "Newspaper", image: "newspaper.fill", isReusable: true, reuseOptions: ["Gift Wrap","Paper Mache","Compost"]),
+        .init(id: 7, name: "Tin Can", image: "music.note", isReusable: true, reuseOptions: ["Wind Chime","Pencil Holder","Plant Pot"]),
+        .init(id: 8, name: "Wine Cork", image: "pin.fill", isReusable: true, reuseOptions: ["Bulletin Board","Craft Stamps","Mini Figures"]),
+        // non-reusables
+        .init(id: 9, name: "Banana Peel", image: "leaf.fill", isReusable: false, reuseOptions: nil),
+        .init(id: 10, name: "Broken Glass", image: "flame.fill", isReusable: false, reuseOptions: nil)
+    ]
 }
 
-// MARK: - Subviews
+// MARK: - Main Game View
 
-struct ReuseStationView: View {
-    let station: ReuseStation
-    
+struct FinalReuseGameView: View {
+    @State private var items = ReuseItem.initialList
+    @State private var score = 0
+    @State private var showSuccess = false
+    @State private var showFailure = false
+    @State private var showCannotReuse = false
+    @State private var reuseIdeas: [String] = []
+    @State private var currentItemName = ""
+    private let margin: CGFloat = 50
+
     var body: some View {
-        VStack {
-            Image(systemName: station.type.icon)
-                .font(.system(size: 40))
-                .foregroundColor(.white)
-                .padding()
-                .background(station.type.color)
-                .clipShape(Circle())
+        GeometryReader { geo in
+            let size = geo.size
+            let zoneHeight = size.height * 0.2
+            let binZone = CGRect(x: 0, y: size.height - zoneHeight, width: size.width / 2, height: zoneHeight)
+            let homeZone = CGRect(x: size.width / 2, y: size.height - zoneHeight, width: size.width / 2, height: zoneHeight)
+            let binPos = CGPoint(x: binZone.midX, y: binZone.midY)
+            let homePos = CGPoint(x: homeZone.midX, y: homeZone.midY)
+            let topStations: [ReuseStation] = [
+                .init(type: .craft, position: CGPoint(x: margin, y: margin)),
+                .init(type: .garden, position: CGPoint(x: size.width - margin, y: margin))
+            ]
+
+            ZStack {
+                // Background Image
+                Image("Green_Forest_1")
+                    .resizable()
+                    .scaledToFill()
+                    .edgesIgnoringSafeArea(.all)
+
+                // Top stations
+                ForEach(topStations) { station in
+                    StationView(station: station)
+                }
+
+                // Bottom zones
+                Rectangle()
+                    .fill(Color.red.opacity(0.3))
+                    .frame(width: size.width/2, height: zoneHeight)
+                    .position(x: binZone.midX, y: binZone.midY)
+                Rectangle()
+                    .fill(Color.blue.opacity(0.3))
+                    .frame(width: size.width/2, height: zoneHeight)
+                    .position(x: homeZone.midX, y: homeZone.midY)
+
+                // Bin & home icons
+                Image(systemName: "trash.fill")
+                    .font(.system(size: 40)).foregroundColor(.white)
+                    .position(binPos)
+                Image(systemName: StationType.home.iconName)
+                    .font(.system(size: 40)).foregroundColor(.white)
+                    .position(homePos)
+
+                // Draggable items
+                ForEach(items) { item in
+                    ItemView(item: item)
+                        .position(item.position)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    let x = min(max(margin, value.location.x), size.width - margin)
+                                    let y = min(max(margin, value.location.y), size.height - margin)
+                                    if let idx = items.firstIndex(of: item) {
+                                        items[idx].position = CGPoint(x: x, y: y)
+                                    }
+                                }
+                                .onEnded { value in
+                                    handleDrop(at: value.location, in: size, binZone: binZone, homeZone: homeZone, topStations: topStations, item: item)
+                                }
+                        )
+                }
+
+                // Score
+                VStack {
+                    Text("Score: \(score)")
+                        .font(.title).bold().padding()
+                        .background(Color.black.opacity(0.5))
+                        .cornerRadius(10)
+                    Spacer()
+                }
+
+                // Centered Popups
+                if showSuccess {
+                    FeedbackPopup(title: "Great Job!", message: "You reused this item!", ideas: reuseIdeas, color: .green) {
+                        showSuccess = false
+                    }
+                    .position(x: size.width / 2, y: size.height / 2)
+                }
+                
+                if showFailure {
+                    FeedbackPopup(title: "Oh no!", message: "Try again!", ideas: [], color: .red) {
+                        showFailure = false
+                    }
+                    .position(x: size.width / 2, y: size.height / 2)
+                }
+                
+                if showCannotReuse {
+                    FeedbackPopup(title: "Can't Reuse!", message: "You can't reuse \(currentItemName). Put it in the bin!", ideas: [], color: .orange) {
+                        showCannotReuse = false
+                    }
+                    .position(x: size.width / 2, y: size.height / 2)
+                }
+            }
+            .onAppear {
+                // Initialize positions above the zones
+                let maxY = size.height - zoneHeight - margin
+                for idx in items.indices {
+                    let x = CGFloat.random(in: margin...(size.width - margin))
+                    let y = CGFloat.random(in: margin...maxY)
+                    items[idx].position = CGPoint(x: x, y: y)
+                }
+            }
+        }
+    }
+
+    // MARK: - Drop Logic
+    private func handleDrop(at point: CGPoint, in size: CGSize, binZone: CGRect, homeZone: CGRect, topStations: [ReuseStation], item: ReuseItem) {
+        let zoneHeight = size.height * 0.2
+        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
+
+        if binZone.contains(point) {
+            if !item.isReusable {
+                // Correctly put non-reusable in bin
+                score += 1
+                items.remove(at: idx)
+                showSuccess = true
+                reuseIdeas = []
+            } else {
+                // Incorrectly put reusable in bin
+                showCannotReuse = true
+                currentItemName = item.name
+                score -= 1
+            }
+        }
+        else if homeZone.contains(point) {
+            if item.isReusable {
+                // Correctly reused item
+                showSuccess = true
+                reuseIdeas = item.reuseOptions ?? []
+                score += 1
+                items.remove(at: idx)
+            } else {
+                // Incorrectly tried to reuse non-reusable
+                showCannotReuse = true
+                currentItemName = item.name
+                score -= 1
+            }
+        }
+        else {
+            // Check if dropped on craft/garden stations
+            for station in topStations {
+                let rect = CGRect(x: station.position.x - 40,
+                                 y: station.position.y - 40,
+                                 width: 80, height: 80)
+                if rect.contains(point) {
+                    if item.isReusable {
+                        // Correctly reused at station
+                        showSuccess = true
+                        reuseIdeas = item.reuseOptions ?? []
+                        score += 1
+                        items.remove(at: idx)
+                    } else {
+                        // Incorrectly tried to reuse non-reusable
+                        showCannotReuse = true
+                        currentItemName = item.name
+                        score -= 1
+                    }
+                    return
+                }
+            }
             
-            Text(station.type.title)
-                .font(.headline)
-                .foregroundColor(.white)
-                .shadow(color: .black, radius: 2)
-                .frame(width: 100)
-                .multilineTextAlignment(.center)
+            // Reset if no valid drop
+            let maxY = size.height - zoneHeight - margin
+            items[idx].position = CGPoint(
+                x: CGFloat.random(in: margin...(size.width - margin)),
+                y: CGFloat.random(in: margin...maxY)
+            )
         }
     }
 }
 
-struct SuccessMessageView: View {
-    let reuseIdeas: [String]
+// MARK: - Subviews
+
+struct StationView: View {
+    let station: ReuseStation
+    var body: some View {
+        Image(systemName: station.type.iconName)
+            .font(.system(size: 40))
+            .foregroundColor(station.type.color)
+            .position(station.position)
+    }
+}
+
+struct ItemView: View {
+    let item: ReuseItem
+    var body: some View {
+        Image(systemName: item.image)
+            .resizable().scaledToFit()
+            .frame(width: 80, height: 80)
+            .padding(10)
+            .background(item.isReusable ? Color.orange.opacity(0.7) : Color.gray.opacity(0.7))
+            .cornerRadius(10)
+            .shadow(radius: 3)
+    }
+}
+
+struct FeedbackPopup: View {
+    let title: String
+    let message: String
+    let ideas: [String]
+    let color: Color
     let action: () -> Void
     
     var body: some View {
-        VStack {
-            Text("Great Idea!")
+        VStack(spacing: 12) {
+            Text(title)
                 .font(.largeTitle)
                 .bold()
-                .foregroundColor(.green)
-                .padding()
-            
-            Text("You can reuse this for:")
-                .font(.title2)
                 .foregroundColor(.white)
             
-            ForEach(reuseIdeas, id: \.self) { idea in
-                Text("• \(idea)")
-                    .font(.title3)
-                    .foregroundColor(.white)
-            }
-            .padding(.vertical, 5)
+            Text(message)
+                .font(.title2)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
             
-            Button(action: action) {
-                Text("OK")
-                    .font(.title)
-                    .padding()
-                    .background(Color.green)
+            if !ideas.isEmpty {
+                Text("You can reuse this for:")
+                    .font(.headline)
                     .foregroundColor(.white)
-                    .cornerRadius(10)
+                
+                ForEach(ideas, id: \.self) { idea in
+                    Text("• \(idea)")
+                        .foregroundColor(.white)
+                }
             }
-            .padding(.top)
+            
+            Button("OK", action: action)
+                .padding()
+                .background(color)
+                .foregroundColor(.white)
+                .cornerRadius(8)
         }
-        .frame(width: 300, height: 300)
+        .padding()
         .background(Color.black.opacity(0.8))
         .cornerRadius(20)
         .shadow(radius: 10)
+        .frame(width: 300)
     }
 }
 
 // MARK: - Preview
 
-struct ReuseGameView_Previews: PreviewProvider {
+struct FinalReuseGameView_Previews: PreviewProvider {
     static var previews: some View {
-        ReuseGameView()
+        FinalReuseGameView()
     }
 }
