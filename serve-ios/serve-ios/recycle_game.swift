@@ -7,10 +7,172 @@
 
 import SwiftUI
 
+// MARK: - Models
+enum RecycleType: String, CaseIterable {
+    case paper, plastic, glass, metal
+}
+
+struct RecycleItem: Identifiable, Equatable {
+    let id: Int
+    let name: String
+    let image: String
+    let type: RecycleType
+    let recycleTips: [String]
+    var offset: CGSize = .zero
+    var dragOffset: CGSize = .zero
+    
+    static let initialList: [RecycleItem] = [
+        .init(id: 1, name: "Carboard Box", image: "shippingbox", type: .paper, recycleTips: ["Make sure the box is clean"]),
+        .init(id: 2, name: "Used Paper", image: "document.on.document", type: .paper, recycleTips: ["Make sure the paper is clean"]),
+        .init(id: 3, name: "Glass Bottle", image: "wineglass", type: .glass, recycleTips: ["Clean the bottle thoroughly", "Dry it completely"]),
+        .init(id: 4, name: "Plastic Bottle", image: "waterbottle", type: .plastic, recycleTips: ["Clean the bottle thoroughly", "Dry it completely"]),
+        .init(id: 5, name: "Aluminium Can", image: "cylinder", type: .metal, recycleTips: ["Clean the can thoroughly", "Dry it completely"])
+    ]
+}
+
+
+// MARK: - Main Game View
 struct recycle_game: View {
+    
+    @State var items: [RecycleItem] = RecycleItem.initialList
+    
+    private let margin: CGFloat = 50
+    
+    @State private var showSuccess = false
+    @State private var showFailure = false
+    @State private var showCannotReuse = false
+    @State private var recycleTips:[String] = []
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        GeometryReader{ geo in
+            let size = geo.size
+            
+            let binWidth: CGFloat = size.width/4
+            let binHeight: CGFloat = size.height*0.2
+            let startX: CGFloat = 0
+            let binY = size.height - binHeight
+            
+            let binRects: [RecycleType: CGRect] = [
+                .paper: CGRect(x: startX, y: binY, width: binWidth, height: binHeight),
+                .plastic: CGRect(x: startX + (binWidth), y: binY, width: binWidth, height: binHeight),
+                .glass: CGRect(x: startX + 2 * (binWidth), y: binY, width: binWidth, height: binHeight),
+                .metal: CGRect(x: startX + 3 * (binWidth), y: binY, width: binWidth, height: binHeight)
+            ]
+            
+            
+            ZStack{
+                Rectangle()
+                    .fill(Color.green)
+                    .overlay(
+                        Image("Green_Forest_1")
+                            .resizable()
+                            .scaledToFill()
+                    )
+                    .ignoresSafeArea()
+                    .frame(width: geo.size.width, height: geo.size.height)
+                
+                
+                ForEach(RecycleType.allCases, id: \.self) { type in
+                    if let rect = binRects[type] {
+                        ZStack{
+                            Rectangle()
+                                .fill(binColor(for: type).opacity(0.4))
+                                .frame(width: rect.width, height: rect.height)
+                                .position(x: rect.midX, y: rect.midY)
+                            
+                            Image(systemName: type  == .paper ? "document.on.document.fill": type == .plastic ? "waterbottle" : type == .glass ? "wineglass" : "tray")
+                                .font(.system(size: 40)).foregroundColor(.white)
+                                .position(x: rect.midX, y: rect.midY)
+                        }
+                    }
+                }
+                
+                
+                ForEach(items) { item in
+                    Image(systemName: item.image)
+                        .resizable().scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .padding(10)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                        .shadow(radius: 3)
+                        .position(x: item.offset.width+item.dragOffset.width, y: item.offset.height+item.dragOffset.height)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    if let indx = items.firstIndex(of: item) {
+                                        items[indx].dragOffset = value.translation
+                                    }
+                                }
+                                .onEnded { value in
+                                    if let indx = items.firstIndex(of: item) {
+                                        items[indx].offset.width += value.translation.width
+                                        items[indx].offset.height += value.translation.height
+                                        items[indx].dragOffset = .zero
+                                        handleDrop(indx: indx, at: value.location, size: geo.size, binRects: binRects)
+                                    }
+                                }
+                        )
+                }
+                .onAppear {
+                    let maxY = size.height - binHeight - margin
+                    let maxX = size.width - margin
+                    for i in items.indices {
+                        items[i].offset = CGSize(width: CGFloat.random(in: margin...maxX), height: CGFloat.random(in: margin...maxY))
+                    }
+                }
+                
+                if showSuccess {
+                    FeedbackPopup(title: "Great Job!", message: "You recycled this item!", pointsMessage: "Before Recycling:", points: recycleTips, color: .green) {
+                        showSuccess = false
+                    }
+                    .position(x: size.width / 2, y: size.height / 2)
+                }
+                
+                if showFailure {
+                    FeedbackPopup(title: "Oh no!", message: "Try again!", pointsMessage: "You can reuse this for:", points: [], color: .red) {
+                        showFailure = false
+                    }
+                    .position(x: size.width / 2, y: size.height / 2)
+                }
+            }
+        }
     }
+    
+    // MARK: - Drop Logic
+    
+    private func handleDrop(indx: Int, at point: CGPoint, size: CGSize, binRects: [RecycleType:CGRect]){
+        
+        for type in RecycleType.allCases{
+            if let rect = binRects[type]{
+                if rect.contains(point){
+                    if items[indx].type == type{
+                        showSuccess = true
+                        recycleTips = items[indx].recycleTips
+                        items.remove(at: indx)
+                    }
+                    else{
+                        showFailure = true
+                        let maxY = size.height - size.height*0.2 - margin
+                        let maxX = size.width - margin
+                        items[indx].offset = CGSize(width: CGFloat.random(in: margin...maxX), height: CGFloat.random(in: margin...maxY))
+                    }
+                    return
+                }
+            }
+        }
+    }
+    
+    
+    private func binColor(for type: RecycleType) -> Color {
+        switch type {
+            case .paper: return .blue
+            case .plastic: return .yellow
+            case .glass: return .green
+            case .metal: return .gray
+        }
+    }
+    
 }
 
 #Preview {
