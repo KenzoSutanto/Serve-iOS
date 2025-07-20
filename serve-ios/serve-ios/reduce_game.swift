@@ -12,8 +12,8 @@ struct ScenarioCard: Identifiable {
     let textLeft: String
     let textRight: String
     let correctIsLeft: Bool
-    let imageLeft: String  // SF Symbol name for left choice
-    let imageRight: String // SF Symbol name for right choice
+    let imageLeft: String
+    let imageRight: String
 }
 
 struct FeedbackView: View {
@@ -60,18 +60,14 @@ struct FeedbackView: View {
     }
 }
 
-// MARK: - Changed: Added images to ScenarioCardView
 struct ScenarioCardView: View {
     let card: ScenarioCard
     var onChoose: (Bool) -> Void
     
     var body: some View {
         HStack(spacing: 20) {
-            // Pass image name to ChoiceView
             ChoiceView(text: card.textLeft, isLeft: true, imageName: card.imageLeft)
                 .onTapGesture { onChoose(true) }
-            
-            // Pass image name to ChoiceView
             ChoiceView(text: card.textRight, isLeft: false, imageName: card.imageRight)
                 .onTapGesture { onChoose(false) }
         }
@@ -80,28 +76,24 @@ struct ScenarioCardView: View {
     }
 }
 
-// MARK: - Changed: Added image to ChoiceView
 struct ChoiceView: View {
     let text: String
     let isLeft: Bool
-    let imageName: String  // SF Symbol name
+    let imageName: String
 
     var body: some View {
         VStack(spacing: 10) {
-            // Added image above text
             Image(systemName: imageName)
                 .font(.system(size: 40))
-                .symbolRenderingMode(.multicolor)
                 .foregroundColor(isLeft ? .green : .blue)
-            
             Text(text)
-                .font(.system(size: 20, weight: .bold)) // Slightly reduced font size
+                .font(.system(size: 20, weight: .bold))
                 .minimumScaleFactor(0.5)
                 .lineLimit(3)
                 .multilineTextAlignment(.center)
         }
         .padding()
-        .frame(maxWidth: .infinity, minHeight: 160) // Increased minHeight to accommodate image
+        .frame(maxWidth: .infinity, minHeight: 160)
         .background(Color(isLeft ? .green : .blue).opacity(0.3))
         .cornerRadius(10)
         .animation(.easeInOut, value: text)
@@ -200,7 +192,7 @@ struct ReduceEndScreenView: View {
                     HStack {
                         Text("Score: \(score)")
                             .font(.system(size: geo.size.width * 0.0703, weight: .bold))
-                        Image(systemName: "star.fill") // Filled star
+                        Image(systemName: "star.fill")
                             .font(.system(size: geo.size.width * 0.0703))
                             .foregroundColor(.yellow)
                     }
