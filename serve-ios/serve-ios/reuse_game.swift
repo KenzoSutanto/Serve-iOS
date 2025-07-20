@@ -53,7 +53,7 @@ struct ReuseItem: Identifiable, Equatable {
 
 // MARK: - Main Game View
 
-struct FinalReuseGameView: View {
+struct ReuseGameView: View {
     @State private var items = ReuseItem.initialList
     @State private var score = 0
     @State private var showSuccess = false
@@ -136,21 +136,21 @@ struct FinalReuseGameView: View {
 
                 // Centered Popups
                 if showSuccess {
-                    FeedbackPopup(title: "Great Job!", message: "You reused this item!", pointsMessage: "You can reuse this for:", points: reuseIdeas, color: .green) {
+                    FeedbackPopup(title: "Great Job!", message: "You reused/disposed of this item!", pointsMessage: "You can reuse this for:", points: reuseIdeas, color: .green) {
                         showSuccess = false
                     }
                     .position(x: size.width / 2, y: size.height / 2)
                 }
                 
                 if showFailure {
-                    FeedbackPopup(title: "Oh no!", message: "Try again!", pointsMessage: "You can reuse this for:", points: [], color: .red) {
+                    FeedbackPopup(title: "Oh no!", message: "Try again!", pointsMessage: "", points: [], color: .red) {
                         showFailure = false
                     }
                     .position(x: size.width / 2, y: size.height / 2)
                 }
                 
                 if showCannotReuse {
-                    FeedbackPopup(title: "Can't Reuse!", message: "You can't reuse \(currentItemName). Put it in the bin!", pointsMessage: "You can reuse this for:", points: [], color: .orange) {
+                    FeedbackPopup(title: "Can't Reuse!", message: "You can't reuse \(currentItemName). Put it in the bin!", pointsMessage: "", points: [], color: .orange) {
                         showCannotReuse = false
                     }
                     .position(x: size.width / 2, y: size.height / 2)
@@ -174,13 +174,11 @@ struct FinalReuseGameView: View {
 
         if binZone.contains(point) {
             if !item.isReusable {
-                // Correctly put non-reusable in bin
                 score += 1
                 items.remove(at: idx)
                 showSuccess = true
                 reuseIdeas = []
             } else {
-                // Incorrectly put reusable in bin
                 showCannotReuse = true
                 currentItemName = item.name
                 score -= 1
@@ -188,33 +186,28 @@ struct FinalReuseGameView: View {
         }
         else if homeZone.contains(point) {
             if item.isReusable {
-                // Correctly reused item
                 showSuccess = true
                 reuseIdeas = item.reuseOptions ?? []
                 score += 1
                 items.remove(at: idx)
             } else {
-                // Incorrectly tried to reuse non-reusable
                 showCannotReuse = true
                 currentItemName = item.name
                 score -= 1
             }
         }
         else {
-            // Check if dropped on craft/garden stations
             for station in topStations {
                 let rect = CGRect(x: station.position.x - 40,
                                  y: station.position.y - 40,
                                  width: 80, height: 80)
                 if rect.contains(point) {
                     if item.isReusable {
-                        // Correctly reused at station
                         showSuccess = true
                         reuseIdeas = item.reuseOptions ?? []
                         score += 1
                         items.remove(at: idx)
                     } else {
-                        // Incorrectly tried to reuse non-reusable
                         showCannotReuse = true
                         currentItemName = item.name
                         score -= 1
@@ -222,8 +215,7 @@ struct FinalReuseGameView: View {
                     return
                 }
             }
-            
-            // Reset if no valid drop
+
             let maxY = size.height - zoneHeight - margin
             items[idx].position = CGPoint(
                 x: CGFloat.random(in: margin...(size.width - margin)),
@@ -283,7 +275,7 @@ struct FeedbackPopup: View {
                     .font(.headline)
                     .foregroundColor(.white)
                 
-                ForEach(points, id: \.self) { idea in
+                ForEach(points, id: \ .self) { idea in
                     Text("• \(idea)")
                         .foregroundColor(.white)
                 }
@@ -311,8 +303,9 @@ struct FeedbackPopup: View {
 
 // MARK: - Preview
 
-struct FinalReuseGameView_Previews: PreviewProvider {
+struct ReuseGameView_Previews: PreviewProvider {
     static var previews: some View {
-        FinalReuseGameView()
+        ReuseGameView()
     }
 }
+

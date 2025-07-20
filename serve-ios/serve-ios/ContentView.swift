@@ -2,45 +2,21 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        TabView {
-            // Home Tab
             NavigationStack {
                 HomeView()
             }
-            .toolbar(.hidden, for: .navigationBar) // Hide top bar
-            .tabItem {
-                Label("Home", systemImage: "house.fill")
-            }
-
-            // Recycle Tab
             NavigationStack {
                 recycle_game()
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .tabItem {
-                Label("Recycle", systemImage: "arrow.2.circlepath")
-            }
-
-            // Reuse Tab
             NavigationStack {
-                FinalReuseGameView()
+                ReuseGameView()
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .tabItem {
-                Label("Reuse", systemImage: "arrow.2.circlepath.circle")
-            }
-
-            // Reduce Tab
             NavigationStack {
                 ReduceGameMenuView()
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .tabItem {
-                Label("Reduce", systemImage: "scalemass")
             }
         }
-    }
-}
+
 
 // MARK: - Home View
 struct HomeView: View {
@@ -75,7 +51,7 @@ struct HomeView: View {
                     .buttonStyle(PrimaryButtonStyle())
 
                     NavigationLink("Reuse") {
-                        FinalReuseGameView()
+                        ReuseGameView()
                     }
                     .buttonStyle(PrimaryButtonStyle())
 
