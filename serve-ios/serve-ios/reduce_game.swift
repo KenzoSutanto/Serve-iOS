@@ -14,7 +14,49 @@ struct ScenarioCard: Identifiable {
     let correctIsLeft: Bool
 }
 
-
+struct FeedbackView: View {
+    let isCorrect: Bool
+    let score: Int
+    let action: () -> Void
+    
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                Color(isCorrect ? .green : .red).opacity(0.7)
+                    .ignoresSafeArea()
+                VStack {
+                    HStack {
+                        Text("Score: \(score)")
+                            .font(.system(size: geo.size.width * 0.0703, weight: .bold))
+                        Image(systemName: "star.fill") // Filled star
+                            .font(.system(size: geo.size.width * 0.0703))
+                            .foregroundColor(.yellow)
+                    }
+                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.system(size: 100))
+                        .foregroundColor(.white)
+                    
+                    Text(isCorrect ? "Good Choice!" : "Try Again!")
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(.white)
+                        .padding(.bottom, 30)
+                    
+                    Button(action: action) {
+                        Text("Move to next question")
+                            .font(.title2)
+                            .bold()
+                            .padding()
+                            .frame(width: 300)
+                            .background(Color.white)
+                            .foregroundColor(isCorrect ? .green : .red)
+                            .cornerRadius(10)
+                    }
+                }
+            }
+        }
+    }
+}
 
 struct ScenarioCardView: View {
     let card: ScenarioCard
@@ -66,6 +108,8 @@ class ReduceGame: ObservableObject {
     @Published var cards: [ScenarioCard]
     @Published var currentIndex = 0
     @Published var score = 0
+    @Published var showFeedback: Bool = false
+    @Published var isCorrect: Bool = false
 
     init(cards: [ScenarioCard]) {
         self.cards = cards.shuffled()
@@ -76,13 +120,21 @@ class ReduceGame: ObservableObject {
         
         if currentCard.correctIsLeft == isLeft {
             score += 1
+            isCorrect = true
         }
-        currentIndex += 1
+        showFeedback = true
+        
+        
     }
     
     var currentCard: ScenarioCard? {
         guard currentIndex < cards.count else { return nil }
         return cards[currentIndex]
+    }
+    
+    func moveToNextCard() {
+        showFeedback = false
+        currentIndex += 1
     }
     
     func reset() {
@@ -93,7 +145,7 @@ class ReduceGame: ObservableObject {
     
 }
 
-struct EndScreenView: View {
+struct ReduceEndScreenView: View {
     let score: Int
     var resetAction: () -> Void
     var body: some View {
@@ -113,7 +165,6 @@ struct EndScreenView: View {
                         .font(.system(size: geo.size.width * 0.097, weight: .black))
                         .foregroundStyle(.red)
                         .shadow(radius: 10)
-                    
                     HStack {
                         Text("Score: \(score)")
                             .font(.system(size: geo.size.width * 0.0703, weight: .bold))
@@ -137,7 +188,7 @@ struct EndScreenView: View {
     }
 }
 
-struct GameView: View {
+struct ReduceGameView: View {
     @StateObject var game: ReduceGame
     var body: some View {
         GeometryReader { geo in
@@ -151,11 +202,24 @@ struct GameView: View {
                     )
                     .ignoresSafeArea()
                     .frame(width: geo.size.width, height: geo.size.height)
-                VStack {
-                    if let currentCard = game.currentCard {
-                        ScenarioCardView(card: currentCard, onChoose: {choice in game.choose(isLeft: choice)})
-                    } else {
-                        EndScreenView(score: game.score, resetAction: {game.reset()})
+                if game.showFeedback {
+                    FeedbackView(isCorrect: game.isCorrect, score: game.score, action: { game.moveToNextCard() }, )
+                } else {
+                    VStack {
+                        if let currentCard = game.currentCard {
+                            VStack {
+                                HStack {
+                                    Text("Score: \(game.score)")
+                                        .font(.system(size: geo.size.width * 0.0703, weight: .bold))
+                                    Image(systemName: "star.fill") // Filled star
+                                        .font(.system(size: geo.size.width * 0.0703))
+                                        .foregroundColor(.yellow)
+                                }
+                                ScenarioCardView(card: currentCard, onChoose: {choice in game.choose(isLeft: choice)})
+                            }
+                        } else {
+                            ReduceEndScreenView(score: game.score, resetAction: {game.reset()})
+                        }
                     }
                 }
             }
@@ -163,7 +227,7 @@ struct GameView: View {
     }
 }
 
-struct GameMenuView: View {
+struct ReduceGameMenuView: View {
     var body: some View {
         NavigationStack {
             GeometryReader { geo in
@@ -185,7 +249,7 @@ struct GameMenuView: View {
                             .frame(width: .infinity)
                         Spacer()
                         NavigationLink {
-                            GameView(game: createGame())
+                            ReduceGameView(game: createGame())
                         } label: {
                             Text("Start game")
                                 .padding()    // Green background
@@ -204,7 +268,7 @@ struct GameMenuView: View {
 #Preview {
     //@Previewable @StateObject var game = createGame()
     //EndScreenView(score: 10, resetAction: {game.reset()})
-    GameMenuView()
+    ReduceGameMenuView()
 }
 
 //
