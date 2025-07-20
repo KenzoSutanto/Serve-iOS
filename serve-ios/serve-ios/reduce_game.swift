@@ -33,21 +33,21 @@ struct FeedbackView: View {
                             .foregroundColor(.yellow)
                     }
                     Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 100))
+                        .font(.system(size: geo.size.width * 0.097))
                         .foregroundColor(.white)
                     
-                    Text(isCorrect ? "Good Choice!" : "Try Again!")
+                    Text(isCorrect ? "Good Choice!" : "Wrong Answer!")
                         .font(.largeTitle)
                         .bold()
                         .foregroundColor(.white)
-                        .padding(.bottom, 30)
+                        .padding(.bottom, geo.size.height * 0.0219)
                     
                     Button(action: action) {
                         Text("Move to next question")
                             .font(.title2)
                             .bold()
                             .padding()
-                            .frame(width: 300)
+                            .frame(width: .infinity)
                             .background(Color.white)
                             .foregroundColor(isCorrect ? .green : .red)
                             .cornerRadius(10)
@@ -63,7 +63,7 @@ struct ScenarioCardView: View {
     var onChoose: (Bool) -> Void
     
     var body: some View {
-        HStack(spacing: 20) { // Fixed spacing that will scale naturally
+        HStack(spacing: 20) {
             ChoiceView(text: card.textLeft, isLeft: true)
                 .onTapGesture { onChoose(true) }
             
@@ -71,7 +71,7 @@ struct ScenarioCardView: View {
                 .onTapGesture { onChoose(false) }
         }
         .padding()
-        .frame(maxWidth: .infinity) // Ensure full width
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -86,7 +86,7 @@ struct ChoiceView: View {
             .lineLimit(3)
             .multilineTextAlignment(.center)
             .padding()
-            .frame(maxWidth: .infinity, minHeight: 140) // Flexible dimensions
+            .frame(maxWidth: .infinity, minHeight: 140)
             .background(Color(isLeft ? .green : .blue).opacity(0.3))
             .cornerRadius(10)
             .animation(.easeInOut, value: text)
@@ -99,7 +99,26 @@ func createGame() -> ReduceGame {
         ScenarioCard(textLeft: "Use both sides of the paper", textRight: "Draw only one line and throw away!", correctIsLeft: true),
         ScenarioCard(textLeft: "Keep lights on, I love light!", textRight: "Turn off the light when not using.", correctIsLeft: false),
         ScenarioCard(textLeft: "Throw away food if don't like", textRight: "Eat some of it and share with others", correctIsLeft: false),
-        ScenarioCard(textLeft: "Bring your own bag", textRight: "Use plastic bags that harm the planet", correctIsLeft: true)
+        ScenarioCard(textLeft: "Bring your own bag", textRight: "Use plastic bags that harm the planet", correctIsLeft: true),
+        ScenarioCard(textLeft: "Turn off water while brushing teeth", textRight: "Let water run the whole time", correctIsLeft: true),
+       ScenarioCard(textLeft: "Fill a huge bottle and waste water", textRight: "Use a small cup for drinking water", correctIsLeft: false),
+       ScenarioCard(textLeft: "Fix dripping tap right away", textRight: "Let tap drip all day long", correctIsLeft: true),
+       ScenarioCard(textLeft: "Take small portions and ask for more", textRight: "Take huge portions and throw away", correctIsLeft: true),
+       ScenarioCard(textLeft: "Save food you don't eat for later", textRight: "Throw away food you don't finish", correctIsLeft: true),
+       ScenarioCard(textLeft: "Take many snacks and waste them", textRight: "Share your snack with a friend", correctIsLeft: false),
+       ScenarioCard(textLeft: "Open curtains to use sunlight", textRight: "Turn on all lights in daytime", correctIsLeft: true),
+       ScenarioCard(textLeft: "Close fridge door quickly", textRight: "Stand with fridge door open", correctIsLeft: true),
+       ScenarioCard(textLeft: "Break toys and throw away", textRight: "Play with toys carefully", correctIsLeft: false),
+       ScenarioCard(textLeft: "Share toys with friends", textRight: "Ask for brand new toys every day", correctIsLeft: true),
+       ScenarioCard(textLeft: "Fix broken crayons with tape", textRight: "Throw away broken crayons", correctIsLeft: true),
+       ScenarioCard(textLeft: "Throw paper on the ground", textRight: "Put paper in recycling bin", correctIsLeft: false),
+       ScenarioCard(textLeft: "Use a refillable water bottle", textRight: "Use new plastic bottles each time", correctIsLeft: true),
+       ScenarioCard(textLeft: "Change clothes many times a day", textRight: "Wear clothes until they're dirty", correctIsLeft: false),
+       ScenarioCard(textLeft: "Pass clothes to younger kids", textRight: "Throw away outgrown clothes", correctIsLeft: true),
+       ScenarioCard(textLeft: "Leave trash on the ground", textRight: "Pick up trash at the park", correctIsLeft: false),
+       ScenarioCard(textLeft: "Water plants with leftover water", textRight: "Pour leftover water down the drain", correctIsLeft: true),
+       ScenarioCard(textLeft: "Use crayons until they're tiny", textRight: "Throw away big crayons", correctIsLeft: true),
+       ScenarioCard(textLeft: "Grab handfuls of tissues", textRight: "Use a tissue only when needed", correctIsLeft: false)
     ]
     return ReduceGame(cards: gameCards)
 }
@@ -121,6 +140,8 @@ class ReduceGame: ObservableObject {
         if currentCard.correctIsLeft == isLeft {
             score += 1
             isCorrect = true
+        } else {
+            isCorrect = false
         }
         showFeedback = true
         
@@ -151,8 +172,8 @@ struct ReduceEndScreenView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Rectangle() // Acts as a perfect container
-                    .fill(Color.green) // Fallback
+                Rectangle()
+                    .fill(Color.green)
                     .overlay(
                         Image("Green_Forest_1")
                             .resizable()
@@ -193,8 +214,8 @@ struct ReduceGameView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Rectangle() // Acts as a perfect container
-                    .fill(Color.green) // Fallback
+                Rectangle()
+                    .fill(Color.green)
                     .overlay(
                         Image("Green_Forest_1")
                             .resizable()
@@ -232,8 +253,8 @@ struct ReduceGameMenuView: View {
         NavigationStack {
             GeometryReader { geo in
                 ZStack {
-                    Rectangle() // Acts as a perfect container
-                        .fill(Color.green) // Fallback
+                    Rectangle()
+                        .fill(Color.green)
                         .overlay(
                             Image("Green_Forest_1")
                                 .resizable()
@@ -243,7 +264,7 @@ struct ReduceGameMenuView: View {
                         .frame(width: geo.size.width, height: geo.size.height)
                     VStack() {
                         Text("Welcome to the Reduce Game!")
-                            .padding(.top, geo.size.height * 0.097)
+                            
                             .foregroundStyle(.black)
                             .font(.system(size: geo.size.width * 0.0703, weight: .bold))
                             .frame(width: .infinity)
@@ -252,13 +273,16 @@ struct ReduceGameMenuView: View {
                             ReduceGameView(game: createGame())
                         } label: {
                             Text("Start game")
-                                .padding()    // Green background
-                                .foregroundStyle(.black)     // White text
+                                .padding()
+                                .foregroundStyle(.black)
                                 .font(.system(size: geo.size.width * 0.0586, weight: .bold))
+                                .background(Color.clear)
                         }
+                        .buttonStyle(.plain)
                         Spacer()
                     }
                     .padding(.bottom, geo.size.height * 0.097)
+                    .padding(.top, geo.size.height * 0.097)
                 }
             }
         }
