@@ -37,7 +37,7 @@ struct ReuseItem: Identifiable, Equatable {
     static let initialList: [ReuseItem] = [
         // reusables
         .init(id: 1, name: "Cardboard Box", image: "shippingbox", isReusable: true, reuseOptions: ["Play House","Storage Bin","Art Canvas"]),
-        .init(id: 2, name: "Glass Jar", image: "jar", isReusable: true, reuseOptions: ["Pencil Holder","Vase","Terrarium"]),
+        .init(id: 2, name: "Glass Jar", image: "wineglass", isReusable: true, reuseOptions: ["Pencil Holder","Vase","Terrarium"]),
         .init(id: 3, name: "Old T-Shirt", image: "tshirt", isReusable: true, reuseOptions: ["Rags","Tote Bag","Quilt"]),
         .init(id: 4, name: "Egg Carton", image: "cube.box.fill", isReusable: true, reuseOptions: ["Seed Starter","Paint Palette","Organizer"]),
         .init(id: 5, name: "Plastic Bottle", image: "drop.fill", isReusable: true, reuseOptions: ["Bird Feeder","Watering Can","Piggy Bank"]),
@@ -67,8 +67,6 @@ struct ReuseGameView: View {
             let zoneHeight = size.height * 0.2
             let binZone = CGRect(x: 0, y: size.height - zoneHeight, width: size.width / 2, height: zoneHeight)
             let homeZone = CGRect(x: size.width / 2, y: size.height - zoneHeight, width: size.width / 2, height: zoneHeight)
-            let binPos = CGPoint(x: binZone.midX, y: binZone.midY)
-            let homePos = CGPoint(x: homeZone.midX, y: homeZone.midY)
             let topStations: [ReuseStation] = [
                 .init(type: .craft, position: CGPoint(x: margin, y: margin)),
                 .init(type: .garden, position: CGPoint(x: size.width - margin, y: margin))
@@ -84,26 +82,67 @@ struct ReuseGameView: View {
                     StationView(station: station)
                 }
 
-                Rectangle()
-                    .fill(Color.red.opacity(0.3))
-                    .frame(width: size.width/2, height: zoneHeight)
-                    .position(x: binZone.midX, y: binZone.midY)
-                Rectangle()
-                    .fill(Color.blue.opacity(0.3))
-                    .frame(width: size.width/2, height: zoneHeight)
-                    .position(x: homeZone.midX, y: homeZone.midY)
 
-                // Bin & home icons
-                Image(systemName: "trash.fill")
-                    .font(.system(size: 40)).foregroundColor(.white)
-                    .position(binPos)
-                Image(systemName: StationType.home.iconName)
-                    .font(.system(size: 40)).foregroundColor(.white)
-                    .position(homePos)
+                ZStack {
+                    Rectangle()
+                        .fill(LinearGradient(gradient: Gradient(colors: [.red, .orange]),
+                              startPoint: .top, endPoint: .bottom))
+                        .opacity(0.6)
+                        .frame(width: size.width/2, height: zoneHeight)
+                    
+                    VStack(spacing: 10) {
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 60, weight: .bold))
+                            .foregroundColor(.white)
+                            .shadow(color: .black, radius: 5, x: 0, y: 3)
+                        
+                        Text("TRASH")
+                            .font(.system(size: 32, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.7), radius: 4, x: 0, y: 2)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(LinearGradient(gradient: Gradient(colors: [.red, .orange]),
+                                          startPoint: .leading, endPoint: .trailing))
+                                    .shadow(radius: 5)
+                            )
+                    }
+                }
+                .position(x: binZone.midX, y: binZone.midY - 10)
 
+                ZStack {
+                    Rectangle()
+                        .fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]),
+                              startPoint: .top, endPoint: .bottom))
+                        .opacity(0.6)
+                        .frame(width: size.width/2, height: zoneHeight)
+                    
+                    VStack(spacing: 10) {
+                        Image(systemName: "house.fill")
+                            .font(.system(size: 60, weight: .bold))
+                            .foregroundColor(.white)
+                            .shadow(color: .black, radius: 5, x: 0, y: 3)
+                        
+                        Text("REUSE")
+                            .font(.system(size: 32, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.7), radius: 4, x: 0, y: 2)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]),
+                                          startPoint: .leading, endPoint: .trailing))
+                                    .shadow(radius: 5)
+                            )
+                    }
+                }
+                .position(x: homeZone.midX, y: homeZone.midY - 10)
                 // Draggable items
                 ForEach(items) { item in
-                    ItemView(item: item)
+                    ItemView(item: item, name: item.name)
                         .position(item.position)
                         .gesture(
                             DragGesture()
@@ -230,14 +269,22 @@ struct StationView: View {
 
 struct ItemView: View {
     let item: ReuseItem
+    let name: String
     var body: some View {
-        Image(systemName: item.image)
-            .resizable().scaledToFit()
-            .frame(width: 80, height: 80)
-            .padding(10)
-            .background(item.isReusable ? Color.orange.opacity(0.7) : Color.gray.opacity(0.7))
-            .cornerRadius(10)
-            .shadow(radius: 3)
+        VStack {
+            Image(systemName: item.image)
+                .resizable().scaledToFit()
+                .frame(width: 80, height: 80)
+                .padding(10)
+                .background(item.isReusable ? Color.orange.opacity(0.7) : Color.gray.opacity(0.7))
+                .cornerRadius(10)
+                .shadow(radius: 3)
+            
+            Text(name)
+                .font(.system(size: 32, weight: .black))
+                .foregroundColor(.black)
+            
+        }
     }
 }
 

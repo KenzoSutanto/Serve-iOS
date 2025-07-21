@@ -72,54 +72,80 @@ struct recycle_game: View {
                 
                 ForEach(RecycleType.allCases, id: \.self) { type in
                     if let rect = binRects[type] {
-                        ZStack{
+                        ZStack {
+                            
                             Rectangle()
-                                .fill(binColor(for: type).opacity(0.4))
+                                .fill(binColor(for: type).opacity(0.6))
                                 .frame(width: rect.width, height: rect.height)
                                 .position(x: rect.midX, y: rect.midY)
                             
-                            Image(systemName: type  == .paper ? "document.on.document.fill": type == .plastic ? "waterbottle" : type == .glass ? "wineglass" : "tray")
-                                .font(.system(size: 40)).foregroundColor(.white)
-                                .position(x: rect.midX, y: rect.midY)
+                            VStack(spacing: 10) {
+                                Image(systemName: type == .paper ? "doc.fill" :
+                                     type == .plastic ? "waterbottle.fill" :
+                                     type == .glass ? "wineglass.fill" : "tray.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.white)
+                                    .shadow(color: .black, radius: 3, x: 0, y: 2)
+                                
+                                Text(type.rawValue.uppercased())
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .shadow(color: .black.opacity(0.7), radius: 4, x: 0, y: 2)
+                                    .padding(8)
+                                    .background(
+                                        Capsule()
+                                            .fill(binColor(for: type).opacity(0.9))
+                                            .shadow(radius: 5)
+                                    )
+                            }
+                            .position(x: rect.midX, y: rect.midY - 20)
                         }
                     }
                 }
                 
                 
                 ForEach(items) { item in
-                    Image(systemName: item.image)
-                        .resizable().scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .padding(10)
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                        .shadow(radius: 3)
-                        .position(x: item.offset.width+item.dragOffset.width, y: item.offset.height+item.dragOffset.height)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    if let indx = items.firstIndex(of: item) {
-                                        items[indx].dragOffset = value.translation
-                                    }
+                    VStack {
+                        Image(systemName: item.image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                            .padding(10)
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                            .shadow(radius: 3)
+                        
+                        Text(item.name)
+                            .font(.system(size: 32, weight: .black))
+                            .foregroundColor(.black)
+                    }
+                    .position(x: item.offset.width + item.dragOffset.width,
+                             y: item.offset.height + item.dragOffset.height)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                if let indx = items.firstIndex(of: item) {
+                                    items[indx].dragOffset = value.translation
                                 }
-                                .onEnded { value in
-                                    if let indx = items.firstIndex(of: item) {
-                                        items[indx].offset.width += value.translation.width
-                                        items[indx].offset.height += value.translation.height
-                                        items[indx].dragOffset = .zero
-                                        handleDrop(indx: indx, at: value.location, size: geo.size, binRects: binRects)
-                                    }
+                            }
+                            .onEnded { value in
+                                if let indx = items.firstIndex(of: item) {
+                                    items[indx].offset.width += value.translation.width
+                                    items[indx].offset.height += value.translation.height
+                                    items[indx].dragOffset = .zero
+                                    handleDrop(indx: indx, at: value.location, size: geo.size, binRects: binRects)
                                 }
-                        )
+                            }
+                    )
                 }
                 .onAppear {
                     let maxY = size.height - binHeight - margin
                     let maxX = size.width - margin
                     for i in items.indices {
-                        items[i].offset = CGSize(width: CGFloat.random(in: margin...maxX), height: CGFloat.random(in: margin...maxY))
+                        items[i].offset = CGSize(width: CGFloat.random(in: margin...maxX),
+                                               height: CGFloat.random(in: margin...maxY))
                     }
                 }
-                
                 if showSuccess {
                     FeedbackPopup(title: "Great Job!", message: "You recycled this item!", pointsMessage: "Before Recycling:", points: recycleTips, color: .green) {
                         showSuccess = false
