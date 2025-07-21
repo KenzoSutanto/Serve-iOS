@@ -24,8 +24,9 @@ struct FeedbackView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color(isCorrect ? .green : .red).opacity(0.7)
-                    .ignoresSafeArea()
+                Color(isCorrect ? .green : .red)
+                    .opacity(0.7)
+                    .ignoresSafeArea() 
                 VStack {
                     HStack {
                         Text("Score: \(score)")
@@ -49,11 +50,11 @@ struct FeedbackView: View {
                             .font(.title2)
                             .bold()
                             .padding()
-                            .frame(width: .infinity)
                             .background(Color.white)
                             .foregroundColor(isCorrect ? .green : .red)
                             .cornerRadius(10)
                     }
+                    .padding(.horizontal, 40)
                 }
             }
         }
@@ -224,7 +225,6 @@ struct ReduceGameView: View {
                             .scaledToFill()
                     )
                     .ignoresSafeArea()
-                    .frame(width: geo.size.width, height: geo.size.height)
                 if game.showFeedback {
                     FeedbackView(isCorrect: game.isCorrect, score: game.score, action: { game.moveToNextCard() })
                 } else {
@@ -246,50 +246,14 @@ struct ReduceGameView: View {
                     }
                 }
             }
+            .ignoresSafeArea()
         }
     }
 }
 
-struct ReduceGameMenuView: View {
-    var body: some View {
-        NavigationStack {
-            GeometryReader { geo in
-                ZStack {
-                    Rectangle()
-                        .fill(Color.green)
-                        .overlay(
-                            Image("Green_Forest_1")
-                                .resizable()
-                                .scaledToFill()
-                        )
-                        .ignoresSafeArea()
-                        .frame(width: geo.size.width, height: geo.size.height)
-                    VStack() {
-                        Text("Welcome to the Reduce Game!")
-                            .foregroundStyle(.black)
-                            .font(.system(size: geo.size.width * 0.0703, weight: .bold))
-                            .frame(width: .infinity)
-                        Spacer()
-                        NavigationLink {
-                            ReduceGameView(game: createGame())
-                        } label: {
-                            Text("Start game")
-                                .padding()
-                                .foregroundStyle(.black)
-                                .font(.system(size: geo.size.width * 0.0586, weight: .bold))
-                                .background(Color.clear)
-                        }
-                        .buttonStyle(.plain)
-                        Spacer()
-                    }
-                    .padding(.bottom, geo.size.height * 0.097)
-                    .padding(.top, geo.size.height * 0.097)
-                }
-            }
-        }
-    }
-}
+
 
 #Preview {
-    ReduceGameMenuView()
+    let game = createGame()
+    ReduceGameView(game: game)
 }

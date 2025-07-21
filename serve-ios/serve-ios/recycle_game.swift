@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Models
 enum RecycleType: String, CaseIterable {
     case paper, plastic, glass, metal
 }
@@ -31,7 +30,6 @@ struct RecycleItem: Identifiable, Equatable {
 }
 
 
-// MARK: - Main Game View
 struct recycle_game: View {
     
     @State var items: [RecycleItem] = RecycleItem.initialList
@@ -139,7 +137,7 @@ struct recycle_game: View {
         }
     }
     
-    // MARK: - Drop Logic
+
     
     private func handleDrop(indx: Int, at point: CGPoint, size: CGSize, binRects: [RecycleType:CGRect]){
         

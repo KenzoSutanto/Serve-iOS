@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - Models
 
 enum StationType: String, CaseIterable, Identifiable {
     case craft, garden, home
@@ -51,7 +50,6 @@ struct ReuseItem: Identifiable, Equatable {
     ]
 }
 
-// MARK: - Main Game View
 
 struct ReuseGameView: View {
     @State private var items = ReuseItem.initialList
@@ -77,18 +75,15 @@ struct ReuseGameView: View {
             ]
 
             ZStack {
-                // Background Image
                 Image("Green_Forest_1")
                     .resizable()
                     .scaledToFill()
                     .edgesIgnoringSafeArea(.all)
 
-                // Top stations
                 ForEach(topStations) { station in
                     StationView(station: station)
                 }
 
-                // Bottom zones
                 Rectangle()
                     .fill(Color.red.opacity(0.3))
                     .frame(width: size.width/2, height: zoneHeight)
@@ -124,8 +119,7 @@ struct ReuseGameView: View {
                                 }
                         )
                 }
-
-                // Score
+                
                 VStack {
                     Text("Score: \(score)")
                         .font(.title).bold().padding()
@@ -134,7 +128,6 @@ struct ReuseGameView: View {
                     Spacer()
                 }
 
-                // Centered Popups
                 if showSuccess {
                     FeedbackPopup(title: "Great Job!", message: "You reused/disposed of this item!", pointsMessage: "You can reuse this for:", points: reuseIdeas, color: .green) {
                         showSuccess = false
@@ -167,7 +160,6 @@ struct ReuseGameView: View {
         }
     }
 
-    // MARK: - Drop Logic
     private func handleDrop(at point: CGPoint, in size: CGSize, binZone: CGRect, homeZone: CGRect, topStations: [ReuseStation], item: ReuseItem) {
         let zoneHeight = size.height * 0.2
         guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
@@ -225,7 +217,6 @@ struct ReuseGameView: View {
     }
 }
 
-// MARK: - Subviews
 
 struct StationView: View {
     let station: ReuseStation
@@ -301,7 +292,6 @@ struct FeedbackPopup: View {
     }
 }
 
-// MARK: - Preview
 
 struct ReuseGameView_Previews: PreviewProvider {
     static var previews: some View {

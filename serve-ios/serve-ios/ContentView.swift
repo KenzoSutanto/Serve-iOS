@@ -2,76 +2,70 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-            NavigationStack {
-                HomeView()
-            }
-            NavigationStack {
-                recycle_game()
-            }
-            NavigationStack {
-                ReuseGameView()
-            }
-            NavigationStack {
-                ReduceGameMenuView()
-            }
-            }
-        }
-
-
-// MARK: - Home View
-struct HomeView: View {
-    var body: some View {
-        ZStack {
-            Image("Green_Forest_1")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-
-            VStack(spacing: 20) {
-                Spacer()
-
-                // Centered Title
-                VStack(spacing: 8) {
-                    Text("Hello!")
-                        .font(.system(.largeTitle, design: .rounded))
-                        .fontWeight(.heavy)
-                        .multilineTextAlignment(.center)
-                    Text("Welcome back!")
-                        .font(.title3)
-                        .multilineTextAlignment(.center)
-                }
-
-                Spacer().frame(height: 20)
-
-                // Buttons
-                VStack(spacing: 20) {
-                    NavigationLink("Recycle") {
-                        recycle_game()
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
-
-                    NavigationLink("Reuse") {
-                        ReuseGameView()
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
-
-                    NavigationLink("Reduce") {
-                        ReduceGameMenuView()
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
-                }
-                .frame(maxWidth: 400)
-                .padding(.horizontal)
-
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding()
+        NavigationStack {
+            HomeView()
         }
     }
 }
 
-// MARK: - Button Style
+
+struct HomeView: View {
+    let game = createGame()
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                Rectangle()
+                    .fill(Color.green)
+                    .overlay(
+                        Image("Green_Forest_1")
+                            .resizable()
+                            .scaledToFill()
+                    )
+                    .ignoresSafeArea()
+                VStack(spacing: geo.size.height * 0.0146) {
+                    Spacer()
+                
+                    VStack(spacing: 8) {
+                        Text("Hello!")
+                            .font(.system(.largeTitle, design: .rounded))
+                            .fontWeight(.heavy)
+                            .multilineTextAlignment(.center)
+                        Text("Welcome back!")
+                            .font(.title3)
+                            .multilineTextAlignment(.center)
+                    }
+                    
+                    Spacer().frame(height: geo.size.height * 0.0146)
+                    
+
+                    VStack(spacing: geo.size.height * 0.0146) {
+                        NavigationLink("Recycle") {
+                            recycle_game()
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                        
+                        NavigationLink("Reuse") {
+                            ReuseGameView()
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                        
+                        NavigationLink("Reduce") {
+                            ReduceGameView(game: game)
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                    }
+                    .frame(maxWidth: geo.size.width * 0.390)
+                    .padding(.horizontal)
+                    
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding()
+            }
+        }
+    }
+}
+
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -85,7 +79,6 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Preview
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
