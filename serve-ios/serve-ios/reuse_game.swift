@@ -37,7 +37,7 @@ struct ReuseItem: Identifiable, Equatable {
     static let initialList: [ReuseItem] = [
         // reusables
         .init(id: 1, name: "Cardboard Box", image: "shippingbox", isReusable: true, reuseOptions: ["Play House","Storage Bin","Art Canvas"]),
-        .init(id: 2, name: "Glass Jar", image: "wineglass", isReusable: true, reuseOptions: ["Pencil Holder","Vase","Terrarium"]),
+        .init(id: 2, name: "Glass Jar", image: "jar", isReusable: true, reuseOptions: ["Pencil Holder","Vase","Terrarium"]),
         .init(id: 3, name: "Old T-Shirt", image: "tshirt", isReusable: true, reuseOptions: ["Rags","Tote Bag","Quilt"]),
         .init(id: 4, name: "Egg Carton", image: "cube.box.fill", isReusable: true, reuseOptions: ["Seed Starter","Paint Palette","Organizer"]),
         .init(id: 5, name: "Plastic Bottle", image: "drop.fill", isReusable: true, reuseOptions: ["Bird Feeder","Watering Can","Piggy Bank"]),
