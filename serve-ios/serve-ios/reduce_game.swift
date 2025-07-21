@@ -81,23 +81,37 @@ struct ChoiceView: View {
     let text: String
     let isLeft: Bool
     let imageName: String
-
+    
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 20) {
             Image(systemName: imageName)
-                .font(.system(size: 40))
-                .foregroundColor(isLeft ? .green : .blue)
+                .font(.system(size: 80))
+                .foregroundColor(.white)
+                .padding(.bottom, 10)
+            
             Text(text)
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: 32, weight: .heavy, design: .rounded))
+                .foregroundColor(.white)
                 .minimumScaleFactor(0.5)
-                .lineLimit(3)
+                .lineLimit(2)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 10)
         }
-        .padding()
-        .frame(maxWidth: .infinity, minHeight: 160)
-        .background(Color(isLeft ? .green : .blue).opacity(0.3))
-        .cornerRadius(10)
-        .animation(.easeInOut, value: text)
+        .padding(30)
+        .frame(maxWidth: .infinity, minHeight: 350)
+        .background(
+            isLeft ?
+            LinearGradient(gradient: Gradient(colors: [.green, .mint]), startPoint: .top, endPoint: .bottom) :
+            LinearGradient(gradient: Gradient(colors: [.blue, .cyan]), startPoint: .top, endPoint: .bottom)
+        )
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white, lineWidth: 5)
+        )
+        .padding(.horizontal, 20)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: text)
     }
 }
 
