@@ -61,22 +61,79 @@ struct FeedbackView: View {
     }
 }
 
-struct ScenarioCardView: View {
-    let card: ScenarioCard
-    var onChoose: (Bool) -> Void
-    
-    var body: some View {
-        HStack(spacing: 20) {
-            ChoiceView(text: card.textLeft, isLeft: true, imageName: card.imageLeft)
-                .onTapGesture { onChoose(true) }
-            ChoiceView(text: card.textRight, isLeft: false, imageName: card.imageRight)
-                .onTapGesture { onChoose(false) }
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
+// Add this extension (put it outside any other structs)
+extension View {
+    func slashSelect(action: @escaping () -> Void) -> some View {
+        modifier(SlashSelectModifier(action: action))
     }
 }
 
+struct SlashSelectModifier: ViewModifier {
+    let action: () -> Void
+    @State private var dragPoints: [CGPoint] = []
+    @State private var validSlash = false
+    @State private var gestureStarted = false
+    
+    func body(content: Content) -> some View {
+        ZStack {
+            content
+            
+            // Trail drawing - only shows after first valid movement
+            if validSlash && dragPoints.count > 1 {
+                Path { path in
+                    path.move(to: dragPoints.first!)
+                    for point in dragPoints.dropFirst() {
+                        path.addLine(to: point)
+                    }
+                }
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [.white, .blue]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    style: StrokeStyle(
+                        lineWidth: 8,
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+                .blur(radius: 2)
+                .opacity(0.7)
+            }
+        }
+        .gesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    if !gestureStarted {
+                        gestureStarted = true
+                        dragPoints = [value.location]
+                    } else {
+                        dragPoints.append(value.location)
+                        
+                        if dragPoints.count >= 2 {
+                            let distance = hypot(
+                                value.location.x - dragPoints.first!.x,
+                                value.location.y - dragPoints.first!.y
+                            )
+                            validSlash = distance > 30
+                        }
+                    }
+                }
+                .onEnded { value in
+                    if validSlash {
+                        action()
+                    }
+                    dragPoints = []
+                    validSlash = false
+                    gestureStarted = false
+                }
+        )
+        .contentShape(Rectangle())
+    }
+}
+
+// 2. Modify ChoiceView - just replace onTapGesture with slashSelect
 struct ChoiceView: View {
     let text: String
     let isLeft: Bool
@@ -112,6 +169,28 @@ struct ChoiceView: View {
         )
         .padding(.horizontal, 20)
         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: text)
+    }
+}
+
+// 3. Update ScenarioCardView - just change onTapGesture to slashSelect
+struct ScenarioCardView: View {
+    let card: ScenarioCard
+    var onChoose: (Bool) -> Void
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            ChoiceView(text: card.textLeft, isLeft: true, imageName: card.imageLeft)
+                .slashSelect {
+                    onChoose(true)
+                }
+            
+            ChoiceView(text: card.textRight, isLeft: false, imageName: card.imageRight)
+                .slashSelect {
+                    onChoose(false)
+                }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
     }
 }
 
